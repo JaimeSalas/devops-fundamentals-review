@@ -1,4 +1,4 @@
-library identifier: 'auditTools@main'
+library identifier: 'pipeline-utils@main',
         retriever: modernSCM([$class: 'GitSCMSource', remote: 'https://github.com/JaimeSalas/pipeline-utils.git'])
 
 pipeline {
