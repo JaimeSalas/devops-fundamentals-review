@@ -47,7 +47,7 @@ pipeline {
             }
             steps {
                 dir('multibranch') {
-                    sh 'npm run test:e22'
+                    sh 'npm run test:e2e'
                 }
             }
         }
