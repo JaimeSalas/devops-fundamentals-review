@@ -17,19 +17,6 @@ pipeline {
                 }
             }
         }
-        // stage('Build') {
-        //     agent {
-        //         docker {
-        //             image 'node:14-alpine'
-        //             reuseNode true
-        //         }
-        //     }
-        //     steps {
-        //         dir('multibranch') {
-        //             sh 'npm run build'
-        //         }
-        //     }
-        // }
         stage('Tests') {
             agent {
                 docker {
@@ -44,6 +31,9 @@ pipeline {
             }
         }
         stage('Build image & push it to DockerHub'){
+            when {
+                branch 'develop'
+            }
             steps {
                 dir('multibranch') {
                     script {
@@ -52,6 +42,33 @@ pipeline {
                             dockerImage.push();
                             sh 'docker rmi $imageName'
                         }
+                    }
+                }
+            }
+        }
+        stage('Deploy to server') {
+            when {
+                branch 'develop'
+            }
+            environment {
+                containerName = 'my-api-app'
+                ec2Instance = 'ec2-13-38-169-72.eu-west-3.compute.amazonaws.com'
+                appPort = 80
+            }
+            steps {
+                dir('multibranch') {
+                    withCredentials([
+                        sshUserPrivateKey(
+                            credentialsId: 'ec2-ssh-credentials',
+                            keyFileVariable: 'identityFile',
+                            passphraseVariable: 'passphrase',
+                            usernameVariable: 'user'
+                        )
+                    ]){
+                        sh '''
+                          ssh -o StrictHostKeyChecking=no -i $identityFile $user@$ec2Instance \
+                          APP_PORT=$appPort CONTAINER_NAME=$containerName IMAGE_NAME=$imageName bash < ./scripts/deploy.sh
+                        '''
                     }
                 }
             }
