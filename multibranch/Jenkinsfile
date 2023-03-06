@@ -12,7 +12,7 @@ pipeline {
             steps {
                 githubNotify(
                     status: "PENDING",
-                    credentialsId: "github-commit-status-credentials"
+                    credentialsId: "github-commit-status-credentials",
                     account: githubAccount,
                     repo: githubRepoName,
                     description: "Some checks haven't completed yet"
